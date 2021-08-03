@@ -1,41 +1,17 @@
 from django.db import models
 
 class Member(models.Model):
-    login_id  = models.CharField(max_length=45, unique=True)
-    password  = models.CharField(max_length=500)
-    name      = models.CharField(max_length=50)
-    address   = models.CharField(max_length=500)
-    cellphone = models.CharField(max_length=200)
-    email     = models.CharField(max_length=200)
-    points    = models.IntegerField(null=True)
-
+    account      = models.CharField(max_length=45, unique=True)
+    password     = models.CharField(max_length=500)
+    name         = models.CharField(max_length=50)
+    phone_number = models.CharField(max_length=200)
+    email        = models.CharField(max_length=200)
+    points       = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    address      = models.CharField(max_length=500)
+    
     class Meta:
         db_table = "members"
 
-
-
-
-class NonMember(models.Model):
-    order     = models.ForeignKey("orders.Oreder", on_delete=models.CASCADE)
-    password  = models.CharField(max_length=500)
-    name      = models.CharField(max_length=50)
-    address   = models.CharField(max_length=500)
-    cellphone = models.CharField(max_length=200)
-    email     = models.CharField(max_length=200)
-
-    class Meta:
-        db_table = "nonmembers"
-
-
-
-
-class Cart(models.Model):
-    member = models.ForeignKey("Member", on_delete=models.CASCADE)
-    item   = models.ForeignKey("products.Item", on_delete=models.CASCADE)
-    count  = models.IntegerField()
-
-    class Meta:
-        db_table = "carts"  
 
 
 class Wish(models.Model):
@@ -44,3 +20,14 @@ class Wish(models.Model):
 
     class Meta:
         db_table = "wishes"  
+
+
+class Review(models.Model):
+    member     = models.ForeignKey("Member", on_delete=models.CASCADE)
+    item       = models.ForeignKey("products.Item", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    image_url  = models.CharField(max_length=500, null=True)
+    content    = models.TextField()
+
+    class Meta:
+        db_table = "reviews"
