@@ -2,7 +2,8 @@ from django.db import models
 
 class Order(models.Model):
     member   = models.ForeignKey("users.Member", on_delete=models.CASCADE)
-    location  = models.ForeignKey("Location", on_delete=models.CASCADE)
+    status   = models.ForeignKey("Status", on_delete=models.CASCADE)
+    location = models.ForeignKey("Location", on_delete=models.CASCADE)
     order_at = models.DateField(auto_now_add=True)
 
     class Meta:
@@ -21,9 +22,10 @@ class Location(models.Model):
 
 
 class OrderItem(models.Model):
-    item     = models.ForeignKey("products.Item", on_delete=models.CASCADE)
-    status   = models.ForeignKey("Status", on_delete=models.CASCADE)
-    order    = models.ForeignKey("Order", on_delete=models.CASCADE)
+    item              = models.ForeignKey("products.Item", on_delete=models.CASCADE)
+    status            = models.ForeignKey("Status", on_delete=models.CASCADE)
+    order             = models.ForeignKey("Order", on_delete=models.CASCADE)
+    order_item_status = models.ForeignKey("OrderItemStatus", on_delete=models.CASCADE)
     quantity = models.IntegerField()
 
     class Meta:
@@ -33,18 +35,17 @@ class OrderItem(models.Model):
 class Cart(models.Model):
     member      = models.ForeignKey("users.Member", on_delete=models.CASCADE)
     item        = models.ForeignKey("products.Item", on_delete=models.CASCADE)
-    cart_status = models.ForeignKey("CartStatus", on_delete=models.CASCADE)
     quantity    = models.IntegerField()
     
     class Meta:
         db_table = "carts"  
 
 
-class CartStatus(models.Model):
+class OrderItemStatus(models.Model):
     name = models.CharField(max_length=100)
 
     class Meta:
-        db_table = "cart_statuses"  
+        db_table = "order_item_statuses"  
 
 
 
