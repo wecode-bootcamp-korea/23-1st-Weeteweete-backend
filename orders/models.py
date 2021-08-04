@@ -47,7 +47,6 @@ class OrderItemStatus(models.Model):
         db_table = "order_item_statuses"  
 
 
-
 class Status(models.Model):
     name = models.CharField(max_length=100)
 
