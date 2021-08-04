@@ -1,61 +1,47 @@
-<<<<<<< HEAD
-from django.db import models
+import json
 
-class Order(models.Model):
-    member   = models.ForeignKey("users.Member", on_delete=models.CASCADE)
-    status   = models.ForeignKey("Status", on_delete=models.CASCADE)
-    location = models.ForeignKey("Location", on_delete=models.CASCADE)
-    order_at = models.DateField(auto_now_add=True)
+from django.http     import JsonResponse
+from django.views    import View
 
-    class Meta:
-        db_table = "orders"
+from users.models    import *
+from orders.models   import *
+from products.models import *
 
+class CartView(View):
+    def post(self, request, item_id):
+        data = json.loads(request.body)
+        try:
+            cart = Cart.objects.get(item_id = item_id, member_id = data['member_id'])
+            cart.quantity += 1
+            cart.save()
+        except Cart.DoesNotExist:
+            cart = Cart.objects.create(
+                member_id = data['member_id'],
+                item_id = item_id,
+                quantity = 1
+            )
+            cart.save()
+        
+class CartPageView(View):
+    def get(self, request):
+        data = json.loads(request.body)
+        member = request.user
 
-class Location(models.Model):
-    name         = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=200)
-    email        = models.CharField(max_length=200, null=True)
-    address      = models.CharField(max_length=500)
-    content      = models.TextField(null=True)
+        carts = Cart.objects.filter(member = member)
+        results = []
 
-    class Meta:
-        db_table = "locations"
-
-
-class OrderItem(models.Model):
-    item              = models.ForeignKey("products.Item", on_delete=models.CASCADE)
-    order             = models.ForeignKey("Order", on_delete=models.CASCADE)
-    order_item_status = models.ForeignKey("OrderItemStatus", on_delete=models.CASCADE)
-    quantity          = models.IntegerField()
-
-    class Meta:
-        db_table = "orderitems"
-
-
-class Cart(models.Model):
-    member   = models.ForeignKey("users.Member", on_delete=models.CASCADE)
-    item     = models.ForeignKey("products.Item", on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    
-    class Meta:
-        db_table = "carts"  
-
-
-class OrderItemStatus(models.Model):
-    name = models.CharField(max_length=100)
-
-    class Meta:
-        db_table = "order_item_statuses"  
-
-
-
-class Status(models.Model):
-    name = models.CharField(max_length=100)
-
-    class Meta:
-        db_table = "statuses"  
-=======
-from django.shortcuts import render
-
-# Create your views here.
->>>>>>> 7adf4c14b74990854f1d26a4843f373e5ae18947
+        for cart in carts:
+            results.append({
+                "item_id"    : cart.item.id,
+                "item_image" : cart.item.image.image_url[0],
+                "price"      : cart.item.price,
+                "discount"   : cart.item.discount,
+                "item_name"  : cart.item.name,
+                "quantity"   : cart.quantity
+            })
+    def patch(self, request):
+        try:
+        
+            return JsonResponse({"MESSAGE":"SUCCESS"}, status=201)
+        except KeyError:
+            return JsonResponse({"MESSAGE":"KEY_ERROR"}, status=400)
