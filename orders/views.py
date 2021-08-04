@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from django.db import models
 
 class Order(models.Model):
@@ -53,3 +54,8 @@ class Status(models.Model):
 
     class Meta:
         db_table = "statuses"  
+=======
+from django.shortcuts import render
+
+# Create your views here.
+>>>>>>> 7adf4c14b74990854f1d26a4843f373e5ae18947
