@@ -4,7 +4,7 @@ from jwt                  import algorithms
 from django.http.response import JsonResponse
 from django.views         import View
 
-from .models              import *
+from users.models         import Member
 from my_settings          import SECRET_KEY
 
 class SignupView(View):
