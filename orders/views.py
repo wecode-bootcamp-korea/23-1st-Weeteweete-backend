@@ -4,7 +4,7 @@ from django.http     import JsonResponse
 from django.views    import View
 from django.db       import transaction
 
-from orders.models   import Order, OrderItem
+from orders.models   import Order, OrderItem, 
 from users.utils     import login
 
 class OrderView(View):
@@ -12,6 +12,9 @@ class OrderView(View):
     @transaction.atomic
     def post(self, request, item_id):
         data = json.loads(request.body)
+        
+        if Order.objects.filter(member_id = request.user.id, status_id = 1).exists():
+            Order.objects.filter(member_id = request.user.id, status_id = 1).delete()
 
         order = Order.objects.create(member_id = request.user.id, status_id = 1, location_id = None)
 
@@ -47,3 +50,5 @@ class OrderView(View):
         for order_item in order_items]
         
         return JsonResponse({'RESULT': result}, status=200)
+
+
