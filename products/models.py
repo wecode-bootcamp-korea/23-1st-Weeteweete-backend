@@ -1,3 +1,4 @@
+from typing import Mapping
 from django.db import models
 
 class Product(models.Model):
@@ -55,6 +56,7 @@ class Option(models.Model):
 class Image(models.Model):
     item      = models.ForeignKey("Item", on_delete=models.CASCADE)
     image_url = models.CharField(max_length=500)
+    main      = models.BooleanField(default=False)
 
     class Meta:
         db_table = "images"  

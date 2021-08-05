@@ -1,8 +1,7 @@
-from .views import *
-from django.urls  import path, include
+from django.urls  import path
+from users.views  import SignUpView, LoginView
 
 urlpatterns = [
-    path('/signup', SignupView.as_view()),
-    path('/login', LoginView.as_view()),
-    path('/find', FindMemberView.as_view()),
+    path('/member/new', SignUpView.as_view()),
+    path('/member', LoginView.as_view()),
 ]
