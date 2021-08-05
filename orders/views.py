@@ -1,61 +1,69 @@
-<<<<<<< HEAD
-from django.db import models
+import json
 
-class Order(models.Model):
-    member   = models.ForeignKey("users.Member", on_delete=models.CASCADE)
-    status   = models.ForeignKey("Status", on_delete=models.CASCADE)
-    location = models.ForeignKey("Location", on_delete=models.CASCADE)
-    order_at = models.DateField(auto_now_add=True)
+from django.http     import JsonResponse
+from django.views    import View
 
-    class Meta:
-        db_table = "orders"
+from orders.models   import Order, OrderItem
+from users.utils     import login
+
+class OrderView(View):
+    @login
+    def post(self, request, item_id):
+        data=json.loads(request.body)
+
+        order=Order.objects.create(
+            member_id   = request.user.id,
+            status_id   = 1,
+            location_id = None
+        )
+
+        OrderItem.objects.create(
+            item_id              = item_id,
+            order_id             = order.id,
+            order_item_status_id = 1,
+            quantity             = data['quantity']
+        )
+        return JsonResponse({'MESSAGE': "SUCCESS"}, status=201)
+
+    @login
+    def get(self, request):
+        result      = []
+        order_id    = Order.objects.get(member_id=request.user.id, status_id =1).id
+        order_items = OrderItem.objects.filter(order_id=order_id) 
+        
+        for order_item in order_items:
+            informations = []
+            items        = [order_item.item for order_item in order_items]
+            
+            for item in items:
+                informations.append(
+                    {
+                    "product_name"     : item.name,
+                    "product_image"    : item.image_set.all()[0].image_url,
+                    "product_price"    : item.price,
+                    "product_discount" : item.discount
+                    }
+                )
+            result.append(
+                {
+                "order_number" : order_item.order_id,
+                "quantity"     : order_item.quantity,
+                "information"  : informations,
+                "name"         : request.user.name,
+                "phone_number" : request.user.phone_number,
+                "address"      : request.user.address
+                }
+            )
+        return JsonResponse({'RESULT': result}, status=200)
 
 
-class Location(models.Model):
-    name         = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=200)
-    email        = models.CharField(max_length=200, null=True)
-    address      = models.CharField(max_length=500)
-    content      = models.TextField(null=True)
-
-    class Meta:
-        db_table = "locations"
-
-
-class OrderItem(models.Model):
-    item              = models.ForeignKey("products.Item", on_delete=models.CASCADE)
-    order             = models.ForeignKey("Order", on_delete=models.CASCADE)
-    order_item_status = models.ForeignKey("OrderItemStatus", on_delete=models.CASCADE)
-    quantity          = models.IntegerField()
-
-    class Meta:
-        db_table = "orderitems"
-
-
-class Cart(models.Model):
-    member   = models.ForeignKey("users.Member", on_delete=models.CASCADE)
-    item     = models.ForeignKey("products.Item", on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    
-    class Meta:
-        db_table = "carts"  
-
-
-class OrderItemStatus(models.Model):
-    name = models.CharField(max_length=100)
-
-    class Meta:
-        db_table = "order_item_statuses"  
 
 
 
-class Status(models.Model):
-    name = models.CharField(max_length=100)
 
-    class Meta:
-        db_table = "statuses"  
-=======
-from django.shortcuts import render
 
-# Create your views here.
->>>>>>> 7adf4c14b74990854f1d26a4843f373e5ae18947
+
+
+
+
+
