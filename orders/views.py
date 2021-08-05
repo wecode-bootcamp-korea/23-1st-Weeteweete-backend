@@ -34,7 +34,6 @@ class OrderView(View):
         for order_item in order_items:
             informations = []
             items        = [order_item.item for order_item in order_items]
-            
             for item in items:
                 informations.append(
                     {
