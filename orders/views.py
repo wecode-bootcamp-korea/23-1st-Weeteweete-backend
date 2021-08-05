@@ -2,20 +2,18 @@ import json
 
 from django.http     import JsonResponse
 from django.views    import View
+from django.db       import transaction
 
 from orders.models   import Order, OrderItem
 from users.utils     import login
 
 class OrderView(View):
     @login
+    @transaction.atomic
     def post(self, request, item_id):
-        data=json.loads(request.body)
+        data = json.loads(request.body)
 
-        order=Order.objects.create(
-            member_id   = request.user.id,
-            status_id   = 1,
-            location_id = None
-        )
+        order = Order.objects.create(member_id = request.user.id, status_id = 1, location_id = None)
 
         OrderItem.objects.create(
             item_id              = item_id,
@@ -39,12 +37,11 @@ class OrderView(View):
         "address"      : request.user.address,
         "information"  : [
             {
-            "product_name"     : item.name,
-            "product_image"    : item.image_set.get(main=1).image_url,
-            "product_price"    : item.price,
-            "product_discount" : item.discount   
+            "product_name"     : order_item.item.name,
+            "product_image"    : order_item.item.image_set.get(main=1).image_url,
+            "product_price"    : order_item.item.price,
+            "product_discount" : order_item.item.discount   
             }
-            for item in [order_item.item for order_item in order_items]
             ]
         }
         for order_item in order_items]
