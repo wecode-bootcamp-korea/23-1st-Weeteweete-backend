@@ -39,7 +39,7 @@ class OrderView(View):
                 informations.append(
                     {
                     "product_name"     : item.name,
-                    "product_image"    : item.image_set.all()[0].image_url,
+                    "product_image"    : item.image_set.get(main=1).image_url,
                     "product_price"    : item.price,
                     "product_discount" : item.discount
                     }
