@@ -4,7 +4,9 @@ from django.http     import JsonResponse
 from django.views    import View
 from django.db       import transaction
 
-from orders.models   import Order, OrderItem, 
+from products.models import Item
+from orders.models   import Order, OrderItem, Location
+from users.models    import Member
 from users.utils     import login
 
 class OrderView(View):
@@ -52,3 +54,42 @@ class OrderView(View):
         return JsonResponse({'RESULT': result}, status=200)
 
 
+class PurchaseView(View):
+    @login
+    @transaction.atomic
+    def post(self, request):
+        try:
+            data   = json.loads(request.body)
+            member = Member.objects.get(id=request.user.id)
+            if member.points < data['total_price']:
+                return JsonResponse({"MESSAGE":"INSUFFICIENT_POINTS"}, status=400)
+
+            location=Location.objects.create(
+                name         = data['name'],
+                phone_number = data['phone_number'],
+                email        = data.get('email', None),
+                address      = data['address'],
+                content      = data.get('content', None)
+            )
+            
+            member.points = member.points - data['total_price']
+            member.save()            
+
+            order             = Order.objects.get(id=data['order_id'])
+            order.location_id = location.id
+            order.status_id   = 2
+            order.save()
+
+            order_items = OrderItem.objects.filter(order_id=data['order_id']) 
+            for order_item in order_items:
+                order_item.order_item_status_id = 2
+                item                            = Item.objects.get(id=order_item.item_id)
+                item.order_quantity             += order_item.quantity
+                item.stock                      -= order_item.quantity               
+                order_item.save()
+                item.save()
+
+            return JsonResponse({'MESSAGE': "SUCCESS"}, status=201)
+        
+        except KeyError:
+            return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
