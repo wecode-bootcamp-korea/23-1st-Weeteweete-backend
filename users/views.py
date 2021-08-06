@@ -1,4 +1,4 @@
-import json, re, bcrypt, jwt, random, string, secrets
+import json, re, bcrypt, jwt, random, uuid
 
 from django.http.response import JsonResponse
 from django.views         import View
@@ -87,14 +87,13 @@ class NewPasswordView(View):
                 return JsonResponse({"MESSAGE": "INPUT_ERROR"}, status=400)
             
             member        = Member.objects.get(account=data['account'])
-            string_pool   = string.ascii_letters + string.digits
-            temp_password = ''.join(secrets.choice(string_pool) for i in range(10))
-            encoded_pw    = bcrypt.hashpw(temp_password.encode('utf-8'), bcrypt.gensalt())
+            password      = uuid.uuid1().hex
+            encoded_pw    = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
             member.password = encoded_pw.decode('utf-8')
             member.save()
 
-            return JsonResponse({"MESSAGE": temp_password}, status=200)
+            return JsonResponse({"MESSAGE": password}, status=200)
         
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
