@@ -67,12 +67,11 @@ class FindMemberView(View):
             
             member = Member.objects.get(email = data['email'], name=data['name'])
 
-            result = []
-            result.append({
+            result = [{
                 "name"    : member.name,
                 "account" : member.account,
                 "email"   : member.email  
-            })
+            }]
             return JsonResponse({"RESULT" : result}, status = 200)
 
         except KeyError:
