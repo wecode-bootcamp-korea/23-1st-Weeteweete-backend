@@ -45,16 +45,14 @@ class DetailPageView(View):
         if not Item.objects.filter(id=item_id).exists():
             return JsonResponse({"MESSAGE":"NO_MENU"}, status=400)
         
-        result = []
-        
         item   = Item.objects.get(id=item_id)
         
-        result.append({
+        result = {
             "name"           : item.name,
             "price"          : item.price,
             "discount"       : item.discount,
             "discount_price" : item.price-item.discount,
             "image"          : [image.image_url for image in item.image_set.all()]
-        })
+        }
 
         return JsonResponse({'RESULT':result}, status=200)
