@@ -1,6 +1,7 @@
-from django.urls  import path
-from products.views  import MenuPageView
+from django.urls     import path
+from products.views  import PageView, DetailPageView
 
 urlpatterns = [
-    path('', MenuPageView.as_view()),
+    path('', PageView.as_view()),
+    path('/<int:item_id>', DetailPageView.as_view()),
 ] 
