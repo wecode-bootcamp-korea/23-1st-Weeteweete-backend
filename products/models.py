@@ -17,7 +17,6 @@ class Category(models.Model):
 
 
 class Concept(models.Model):
-    category = models.ForeignKey("Category", on_delete=models.CASCADE)
     name     = models.CharField(max_length=100)
     content  = models.TextField(default='')
 
@@ -29,6 +28,7 @@ class Item(models.Model):
     concept        = models.ForeignKey("Concept", on_delete=models.CASCADE)
     color          = models.ForeignKey("Color", on_delete=models.CASCADE)
     option         = models.ForeignKey("Option", on_delete=models.CASCADE)
+    category       = models.ForeignKey("Category", on_delete=models.CASCADE)
     name           = models.CharField(max_length=100)
     price          = models.DecimalField(max_digits=10, decimal_places=2)
     discount       = models.DecimalField(max_digits=10, decimal_places=2)

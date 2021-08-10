@@ -6,7 +6,7 @@ from django.db        import transaction
 from django.db.models import Q, F
 
 from products.models  import Item
-from orders.models    import Order, OrderItem, Location, Cart
+from orders.models    import Order, OrderItem, Location, Cart, OrderItemStatus, OrderStatus
 from users.models     import Member
 from users.utils      import login
 
@@ -17,17 +17,17 @@ class OrderView(View):
         item_id = request.GET.get("item_id", None)
         data    = json.loads(request.body)      
                 
-        if Order.objects.filter(member_id = request.user.id, status_id = 1).exists():
-            Order.objects.filter(member_id = request.user.id, status_id = 1).delete()
+        if Order.objects.filter(member_id = request.user.id, status_id = OrderStatus.Status.WAITING.value).exists():
+            Order.objects.filter(member_id = request.user.id, status_id = OrderStatus.Status.WAITING.value).delete()
 
-        order = Order.objects.create(member_id = request.user.id, status_id = 1, location_id = None)
+        order = Order.objects.create(member_id = request.user.id, status_id = OrderStatus.Status.WAITING.value, location_id = None)
         
         if not item_id:
             for cart in Cart.objects.filter(member_id = request.user.id):
                 OrderItem.objects.create(
                     item_id              = cart.item_id,
                     order_id             = order.id,
-                    order_item_status_id = 1,
+                    order_item_status_id = OrderItemStatus.ItemStatus.WAITING.value,
                     quantity             = cart.quantity
                 )
             return JsonResponse({'MESSAGE': "SUCCESS"}, status=201)
@@ -35,7 +35,7 @@ class OrderView(View):
         OrderItem.objects.create(
             item_id              = item_id,
             order_id             = order.id,
-            order_item_status_id = 1,
+            order_item_status_id = OrderItemStatus.ItemStatus.WAITING.value,
             quantity             = data['quantity']
         )
         
@@ -43,7 +43,7 @@ class OrderView(View):
 
     @login
     def get(self, request):
-        order_items = OrderItem.objects.filter(order_id=Order.objects.get(member_id=request.user.id, status_id =1).id) 
+        order_items = OrderItem.objects.filter(order_id=Order.objects.get(member_id=request.user.id, status_id = OrderStatus.Status.WAITING.value).id) 
         
         result = [
             {
@@ -90,12 +90,12 @@ class PurchaseView(View):
 
             order             = Order.objects.get(id=data['order_id'])
             order.location_id = location.id
-            order.status_id   = 2
+            order.status_id   = OrderStatus.Status.COMPLETED.value
             order.save()
 
             order_items = OrderItem.objects.filter(order_id=data['order_id']) 
             for order_item in order_items:
-                order_item.order_item_status_id = 2
+                order_item.order_item_status_id = OrderItemStatus.ItemStatus.COMPLETED.value
                 item                            = Item.objects.get(id=order_item.item_id)
                 item.order_quantity             += order_item.quantity
                 item.stock                      -= order_item.quantity               
@@ -121,7 +121,7 @@ class CartView(View):
             data = json.loads(request.body)
 
             if Cart.objects.filter(Q(item_id = data['item_id']) & Q(member_id=request.user.id)).exists():
-                return JsonResponse({"MESSAGE":"CART_EXIST"}, status=400)
+                return JsonResponse({"MESSAGE":"CART_ALEADY_EXIST"}, status=409)
             
             if data['quantity'] > Item.objects.get(id = data['item_id']).stock:
                 return JsonResponse({"MESSAGE":"NO_STOCK"}, status=400)
@@ -154,44 +154,43 @@ class CartView(View):
             } 
         for cart in Cart.objects.filter(member_id=request.user.id)]
 
-        return JsonResponse({"RESULT" : results}, status=201)
+        return JsonResponse({"RESULT" : results}, status=200)
 
     @login
     def patch(self, request):
-        is_cart = request.GET.get("is_cart", None)
-        item_id = request.GET.get("item_id", None)
-        quantities = request.GET.get("quantity", None)
-        cart_id = request.GET.get("cart_id", None)
+        try:
+            is_cart = request.GET.get("is_cart", None)
+            data    = json.loads(request.body)
 
-        if not is_cart:
-            cart = Cart.objects.get(Q(item_id = item_id) & Q(member_id=request.user.id))
-            if cart.item.stock < cart.quantity + int(quantities):
+            if not is_cart:
+                cart = Cart.objects.get(Q(item_id = data['item_id']) & Q(member_id=request.user.id))
+                if cart.item.stock < cart.quantity + data['quantities']:
+                    return JsonResponse({"MESSAGE":"NO_STOCK"}, status=400)
+
+                cart.quantity = F('quantity') + data['quantities']
+                cart.save()
+                return JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
+
+            cart = Cart.objects.get(member_id=request.user.id, item_id=data['item_id'])
+            if cart.item.stock < data['quantities']:
                 return JsonResponse({"MESSAGE":"NO_STOCK"}, status=400)
-
-            cart.quantity = F('quantity') + int(quantities)
+            
+            cart.quantity = data['quantities']
             cart.save()
+            
             return JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
+        
+        except KeyError:
+            return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
 
-        cart = Cart.objects.get(id=cart_id)
-        if cart.item.stock < int(quantities):
-            return JsonResponse({"MESSAGE":"NO_STOCK"}, status=400)
-        
-        cart.quantity = int(quantities)
-        cart.save()
-        
-        return JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
 
     @login
     def delete(self, request):
-        is_all = request.GET.get("is_all", None)
-        cart_id = request.GET.get("cart_id", None)
-
-        if not is_all:
-            Cart.objects.get(id = cart_id).delete()
-            return JsonResponse({"MESSAGE" : "DELETE"}, status=200)
-
-        Cart.objects.filter(member_id = request.user.id).delete()
+        item_id = request.GET.getlist("item_id",None)
         
-        return JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
+        for item in item_id:
+            Cart.objects.get(item_id=item).delete()
+        return JsonResponse({"MESSAGE" : "NO_CONTENT"}, status=204)
+
 
 

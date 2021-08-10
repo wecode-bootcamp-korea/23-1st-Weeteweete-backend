@@ -41,14 +41,25 @@ class Cart(models.Model):
 
 
 class OrderItemStatus(models.Model):
+    class ItemStatus(models.IntegerChoices):
+        WAITING   = 1
+        COMPLETED = 2
+
     name = models.CharField(max_length=100)
 
     class Meta:
         db_table = "order_item_statuses"  
 
 
-class Status(models.Model):
+class OrderStatus(models.Model):
+    class Status(models.IntegerChoices):
+        WAITING   = 1
+        COMPLETED = 2
+
     name = models.CharField(max_length=100)
 
     class Meta:
         db_table = "statuses"  
+
+
+
