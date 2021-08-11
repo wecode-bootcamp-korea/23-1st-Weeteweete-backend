@@ -27,6 +27,8 @@ class Review(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
     image_url = models.CharField(max_length=500, null=True)
     content   = models.TextField()
+    grade     = models.IntegerField()
 
+    
     class Meta:
         db_table = "reviews"
