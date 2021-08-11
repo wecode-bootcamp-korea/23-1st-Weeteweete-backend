@@ -22,24 +22,17 @@ class OrderView(View):
 
         order = Order.objects.create(member_id = request.user.id, status_id = OrderStatus.Status.WAITING.value, location_id = None)
         
-        if not item_id:
-            for cart in Cart.objects.filter(member_id = request.user.id):
-                OrderItem.objects.create(
-                    item_id              = cart.item_id,
-                    order_id             = order.id,
-                    order_item_status_id = OrderItemStatus.ItemStatus.WAITING.value,
-                    quantity             = cart.quantity
-                )
-            return JsonResponse({'MESSAGE': "SUCCESS"}, status=201)
-
-        OrderItem.objects.create(
-            item_id              = item_id,
-            order_id             = order.id,
-            order_item_status_id = OrderItemStatus.ItemStatus.WAITING.value,
-            quantity             = data['quantity']
+        OrderItem.objects.bulk_create(
+            [OrderItem
+            (item_id             = cart.item_id if not item_id else item_id, 
+            order_id             = order.id, 
+            order_item_status_id = OrderItemStatus.ItemStatus.WAITING.value, 
+            quantity             = cart.quantity if not item_id else data['quantity']
+            )
+            for cart in (Cart.objects.filter(member_id = request.user.id) if not item_id else range(1))]
         )
-        
         return JsonResponse({'MESSAGE': "SUCCESS"}, status=201)
+
 
     @login
     def get(self, request):
