@@ -59,8 +59,6 @@ class DetailPageView(View):
 
         return JsonResponse({'RESULT':result}, status=200)
 
-
-
 class ReviewView(View):
     @login
     def post(self, request, item_id):
