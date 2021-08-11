@@ -25,11 +25,10 @@ class OrderView(View):
         OrderItem.objects.bulk_create(
             [OrderItem
             (item_id             = cart.item_id if not item_id else item_id, 
-            order_id             = order.id, 
-            order_item_status_id = OrderItemStatus.ItemStatus.WAITING.value, 
-            quantity             = cart.quantity if not item_id else data['quantity']
-            )
-            for cart in (Cart.objects.filter(member_id = request.user.id) if not item_id else range(1))]
+            order_id             = order.id,  
+            quantity             = cart.quantity if not item_id else data['quantity'],
+            order_item_status_id = OrderItemStatus.ItemStatus.WAITING.value,
+            ) for cart in (Cart.objects.filter(member_id = request.user.id) if not item_id else range(1))]
         )
         return JsonResponse({'MESSAGE': "SUCCESS"}, status=201)
 
@@ -103,8 +102,6 @@ class PurchaseView(View):
         
         except KeyError:
             return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
-
-
 
 
 class CartView(View):
@@ -184,6 +181,3 @@ class CartView(View):
         for item in item_id:
             Cart.objects.get(item_id=item).delete()
         return JsonResponse({"MESSAGE" : "NO_CONTENT"}, status=204)
-
-
-
