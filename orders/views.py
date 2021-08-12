@@ -87,8 +87,11 @@ class PurchaseView(View):
 
             order_items = OrderItem.objects.filter(order_id=data['order_id']) 
             for order_item in order_items:
+                item = Item.objects.get(id= order_item.item_id)
+                if order_item.quantity > item.stock:
+                    return JsonResponse({"MESSAGE":"NO_STOCK"}, status=400)
+                
                 order_item.order_item_status_id = OrderItemStatus.ItemStatus.COMPLETED.value
-                item                            = Item.objects.get(id=order_item.item_id)
                 item.order_quantity             += order_item.quantity
                 item.stock                      -= order_item.quantity               
                 
@@ -112,9 +115,6 @@ class CartView(View):
 
             if Cart.objects.filter(Q(item_id = data['item_id']) & Q(member_id=request.user.id)).exists():
                 return CartView.patch(self, request)
-            
-            if data['quantities'] > Item.objects.get(id = data['item_id']).stock:
-                return JsonResponse({"MESSAGE":"NO_STOCK"}, status=400)
                 
             Cart.objects.create(
                 item_id=data['item_id'], 
@@ -150,10 +150,7 @@ class CartView(View):
             data    = json.loads(request.body)
 
             if not is_cart:
-                cart = Cart.objects.get(Q(item_id = data['item_id']) & Q(member_id=request.user.id))
-                if cart.item.stock < cart.quantity + data['quantities']:
-                    return JsonResponse({"MESSAGE":"NO_STOCK"}, status=400)
-
+                cart          = Cart.objects.get(Q(item_id = data['item_id']) & Q(member_id=request.user.id))
                 cart.quantity = F('quantity') + data['quantities']
                 cart.save()
                 return JsonResponse({"MESSAGE" : "ADD_CART"}, status=200)
