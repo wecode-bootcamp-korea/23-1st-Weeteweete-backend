@@ -1,11 +1,12 @@
-import json
+import socket
 
 from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q
 
-from products.models  import Option, Product, Category, Concept, Item, Review
 from users.utils      import login
+from products.models  import Option, Product, Category, Concept, Item, Review
+from orders.models    import Order
 
 
 class PageView(View):
@@ -30,8 +31,8 @@ class PageView(View):
                             {
                                 'id'       : item.id,
                                 'name'     : item.name,
-                                'price'    : item.price,
-                                'discount' : item.discount,
+                                'price'    : float(item.price),
+                                'discount' : float(item.discount),
                                 'stock'    : item.stock,
                                 'color'    : item.color.name if not item.color is None else None,
                                 'image'    : item.image_set.get(main=1).image_url
@@ -44,20 +45,45 @@ class PageView(View):
 
 class DetailPageView(View):
     def get(self, request, item_id):
+        grade = request.GET.get("grade", None)
+        
         if not Item.objects.filter(id=item_id).exists():
             return JsonResponse({"MESSAGE":"NO_MENU"}, status=400)
         
-        item   = Item.objects.get(id=item_id)
+        item = Item.objects.get(id=item_id)
         
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        IP = s.getsockname()[0]
+
         result = {
             "name"           : item.name,
-            "price"          : item.price,
-            "discount"       : item.discount,
-            "discount_price" : item.price-item.discount,
-            "image"          : [image.image_url for image in item.image_set.all()]
+            "price"          : float(item.price),
+            "discount"       : float(item.discount),
+            "discount_price" : float(item.price-item.discount),
+            "image"          : [image.image_url for image in item.image_set.all()],
+            "review"         : [
+                {
+                    "name"      : review.member.name, 
+                    "image"     : "http://"+IP+":8000/media/"+review.image_url.name,
+                    "review_id" : review.id,
+                    "content"   : review.content,
+                    "grade"     : review.grade,
+                    "create_at" : review.create_at
+                }
+            for review in Review.objects.filter(item_id=item_id).order_by("-grade" if grade else "-create_at")]
         }
-
         return JsonResponse({'RESULT':result}, status=200)
+
+    @login
+    def post(self, request, item_id):
+        if not Order.objects.filter(member = request.user, orderitem__item_id = item_id, status_id=2).exists():
+            return JsonResponse({"MESSAGE": "UNATHORIZED"}, status=400)
+            
+        if Review.objects.filter(member = request.user, item_id = item_id).exists():
+            return JsonResponse({"MESSAGE": "EXIST"}, status=400)
+        
+        return JsonResponse({'MESSAGE': "SUCCESS"}, status=200)
 
 class ReviewView(View):
     @login
