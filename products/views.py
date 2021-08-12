@@ -45,23 +45,6 @@ class PageView(View):
 
 class DetailPageView(View):
     def get(self, request, item_id):
-        if not Item.objects.filter(id=item_id).exists():
-            return JsonResponse({"MESSAGE":"NO_MENU"}, status=400)
-        
-        item   = Item.objects.get(id=item_id)
-        
-        result = {
-            "name"           : item.name,
-            "price"          : float(item.price),
-            "discount"       : float(item.discount),
-            "discount_price" : float(item.price-item.discount),
-            "image"          : [image.image_url for image in item.image_set.all()]
-        }
-
-        return JsonResponse({'RESULT':result}, status=200)
-
-class DetailPageView(View):
-    def get(self, request, item_id):
         grade = request.GET.get("grade", None)
         
         if not Item.objects.filter(id=item_id).exists():
