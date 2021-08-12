@@ -48,8 +48,8 @@ class OrderView(View):
             {
             "product_name"     : order_item.item.name,
             "product_image"    : order_item.item.image_set.get(main=1).image_url,
-            "product_price"    : order_item.item.price,
-            "product_discount" : order_item.item.discount   
+            "product_price"    : float(order_item.item.price),
+            "product_discount" : float(order_item.item.discount)   
             }
             ]
         }
@@ -111,15 +111,15 @@ class CartView(View):
             data = json.loads(request.body)
 
             if Cart.objects.filter(Q(item_id = data['item_id']) & Q(member_id=request.user.id)).exists():
-                return JsonResponse({"MESSAGE":"CART_ALEADY_EXIST"}, status=409)
+                return CartView.patch(self, request)
             
-            if data['quantity'] > Item.objects.get(id = data['item_id']).stock:
+            if data['quantities'] > Item.objects.get(id = data['item_id']).stock:
                 return JsonResponse({"MESSAGE":"NO_STOCK"}, status=400)
                 
             Cart.objects.create(
                 item_id=data['item_id'], 
                 member_id = request.user.id, 
-                quantity = data['quantity']
+                quantity = data['quantities']
             )
             return JsonResponse({"MESSAGE" : "SUCCESS"}, status=201)
 
@@ -139,8 +139,8 @@ class CartView(View):
             "quantity" : cart.quantity,
             "name"     : cart.item.name,
             "image"    : cart.item.image_set.get(main=1).image_url,
-            "price"    : cart.item.price,
-            "discount" : cart.item.discount
+            "price"    : float(cart.item.price),
+            "discount" : float(cart.item.discount)
             } 
         for cart in Cart.objects.filter(member_id=request.user.id)]
 
@@ -159,7 +159,7 @@ class CartView(View):
 
                 cart.quantity = F('quantity') + data['quantities']
                 cart.save()
-                return JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
+                return JsonResponse({"MESSAGE" : "ADD_CART"}, status=200)
 
             cart = Cart.objects.get(member_id=request.user.id, item_id=data['item_id'])
             if cart.item.stock < data['quantities']:
