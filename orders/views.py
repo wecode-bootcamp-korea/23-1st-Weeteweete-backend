@@ -129,9 +129,6 @@ class CartView(View):
     @login
     def get(self, request):
 
-        if not Cart.objects.filter(member_id=request.user.id).exists():
-                return JsonResponse({"MESSAGE":"EMPTY_CART"}, status=400)
-
         results = [
             {
             "cart_id"  : cart.id,
