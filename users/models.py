@@ -21,14 +21,3 @@ class Wish(models.Model):
         db_table = "wishes"  
 
 
-class Review(models.Model):
-    member    = models.ForeignKey("Member", on_delete=models.CASCADE)
-    item      = models.ForeignKey("products.Item", on_delete=models.CASCADE)
-    create_at = models.DateTimeField(auto_now_add=True)
-    image_url = models.CharField(max_length=500, null=True)
-    content   = models.TextField()
-    grade     = models.IntegerField()
-
-    
-    class Meta:
-        db_table = "reviews"

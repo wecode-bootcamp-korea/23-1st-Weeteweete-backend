@@ -2,7 +2,7 @@ from django.db import models
 
 class Order(models.Model):
     member   = models.ForeignKey("users.Member", on_delete=models.CASCADE)
-    status   = models.ForeignKey("Status", on_delete=models.CASCADE)
+    status   = models.ForeignKey("OrderStatus", on_delete=models.CASCADE)
     location = models.ForeignKey("Location", on_delete=models.CASCADE, null=True)
     order_at = models.DateField(auto_now_add=True)
 

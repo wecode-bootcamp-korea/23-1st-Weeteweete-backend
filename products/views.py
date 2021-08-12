@@ -4,7 +4,9 @@ from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q
 
-from products.models  import Option, Product, Category, Concept, Item
+from products.models  import Option, Product, Category, Concept, Item, Review
+from users.utils      import login
+
 
 class PageView(View):
      def get(self, request):
@@ -56,3 +58,26 @@ class DetailPageView(View):
         }
 
         return JsonResponse({'RESULT':result}, status=200)
+
+class ReviewView(View):
+    @login
+    def post(self, request, item_id):
+        try:
+            content = request.POST.get("content", None)
+            grade   = request.POST.get("grade", None)
+            image   = request.FILES.get('image', None)
+            
+            if not Item.objects.filter(id=item_id).exists():
+                return JsonResponse({"MESSAGE":"NO_ITEM"}, status=400)
+            
+            Review.objects.create(
+                member_id = request.user.id,
+                item_id   = item_id,
+                image_url = image,
+                content   = content,
+                grade     = grade
+            )
+            return JsonResponse({'MESSAGE': "SUCCESS"}, status=201)
+        
+        except KeyError:
+            return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
