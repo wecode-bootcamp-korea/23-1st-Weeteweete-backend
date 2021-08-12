@@ -179,5 +179,5 @@ class CartView(View):
         item_id = request.GET.getlist("item_id",None)
         
         for item in item_id:
-            Cart.objects.get(item_id=item).delete()
+            Cart.objects.get(member_id=request.user.id, item_id=item).delete()
         return JsonResponse({"MESSAGE" : "NO_CONTENT"}, status=204)
