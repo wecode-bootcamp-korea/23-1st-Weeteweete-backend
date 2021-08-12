@@ -61,6 +61,7 @@ class DetailPageView(View):
             "price"          : float(item.price),
             "discount"       : float(item.discount),
             "discount_price" : float(item.price-item.discount),
+            "stock"          : item.stock,
             "image"          : [image.image_url for image in item.image_set.all()],
             "review"         : [
                 {
