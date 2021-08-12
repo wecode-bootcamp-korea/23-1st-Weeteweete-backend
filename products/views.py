@@ -67,6 +67,9 @@ class ReviewView(View):
             grade   = request.POST.get("grade", None)
             image   = request.FILES.get('image', None)
             
+            if not Item.objects.filter(id=item_id).exists():
+                return JsonResponse({"MESSAGE":"NO_ITEM"}, status=400)
+            
             Review.objects.create(
                 member_id = request.user.id,
                 item_id   = item_id,
