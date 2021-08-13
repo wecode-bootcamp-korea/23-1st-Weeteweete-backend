@@ -64,6 +64,7 @@ class PurchaseView(View):
     def post(self, request):
         try:
             data   = json.loads(request.body)
+            
             member = Member.objects.get(id=request.user.id)
             if member.points < data['total_price']:
                 return JsonResponse({"MESSAGE":"INSUFFICIENT_POINTS"}, status=400)
@@ -75,7 +76,7 @@ class PurchaseView(View):
                 address      = data['address'],
                 content      = data.get('content', None)
             )
-            
+            print(data['total_price'])
             member.points = member.points - data['total_price']
             member.save()            
             
