@@ -361,7 +361,10 @@ zsdoc/data
 #
 my_settings.py
 color.csv
-image.csv
+image3.csv
+item.csv
+member.csv
 concept.csv
 item.csv
 db_uploader.py
+csv/

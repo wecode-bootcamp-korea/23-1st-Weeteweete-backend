@@ -20,7 +20,7 @@ class PageView(View):
             if not main and (not Product.objects.filter(id=product_id).exists() or not Category.objects.filter(id=category_id).exists() or not Option.objects.filter(id=option_id)):
                 return JsonResponse({'MESSAGE':'NO_MENU'}, status=400)
 
-            concepts = Concept.objects.filter(item__category_id = category_id).distinct() if not main else Item.objects.order_by('-order_quantity')[:8] 
+            concepts = Concept.objects.filter(item__category_id = category_id) if not main else Item.objects.order_by('-order_quantity')[:8] 
             
             results = [
                 {
@@ -93,7 +93,7 @@ class ReviewView(View):
             content = request.POST.get("content", None)
             grade   = request.POST.get("grade", None)
             image   = request.FILES.get('image', None)
-
+            
             if not Item.objects.filter(id=item_id).exists():
                 return JsonResponse({"MESSAGE":"NO_ITEM"}, status=400)
             
