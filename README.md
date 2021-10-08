@@ -1,29 +1,51 @@
- ## WEETEWEET 프로젝트 Back-end 소개
-- "motemote" 커머스 사이트 clone
-- 기획이 필요하지 않기 때문에 기본기능 구현에 집중했습니다.
-- 개발은 초기 세팅과 데이터 모델링을 직접 진행했으며, 실제 커머스 사이트의 기능을 대부분 구현했습니다.
-- 프런트 앤드와 연결하여 실제 사용할 수 있는 서비스 수준으로 개발하였습니다.
-- 개발자의 기본 tool인 git과 git hub을 적적하게 사용하였습니다.
-- 적절한 역할 분담과 적극적이 의사소통으로 원활하게 프로젝트를 마무리하였습니다.
+ ## 📓 WeeteWeete 프로젝트 소개
+ 
+ ![image](https://user-images.githubusercontent.com/84963683/136541442-e10a989e-e8e1-4a7d-a41a-98091e12cb19.png)
+
+ **Color라는 가치관을 담아내 감각적이고 심플하지만 강력한 구성, 부드러운 필기감을 구현한 모트모트 Motive Project**
+ 
+ 2주라는 짧은 프로젝트 기간 내에 개발에 집중해야 하므로 디자인/기획 부분만 클론했습니다.   
+ 개발은 초기 세팅과 데이터 모델링을 직접 진행하고 실제 MoteMote 사이트의 기능을 대부분 구현했습니다.   
+ 시연영상에 나오는 부분은 Frontend - Backend간 통신으로 실제 사용할 수 있는 서비스 수준으로 개발했습니다.   
 
 ## 개발 인원 및 기간
-- 총 프로젝트 기간은 2021,08.02 ~2021.08.13입니다.
-- 백앤드 인원은 총 2명입니다.
-- [프론트엔드 github 링크] : https://github.com/wecode-bootcamp-korea/23-1st-Weeteweete-frontend
+- [총 프로젝트 기간] : 2021.08.02 ~2021.08.13
+- [개발 인원] 
+  - Frontend 4명(최호정, 차예은, 배윤아, 이나현)
+  - Backend 2명(백선호, 임종성)
 
-## 프로젝트 구현영상
--  https://www.youtube.com/watch?v=_oMzIV2oyxE
+## Modeling
+![image](https://user-images.githubusercontent.com/84963683/136546044-936b7119-9def-4104-9780-ab4b9efcc540.png)
 
-# 적용 기술 및 구현 기능
+## 프로젝트 구현 페이지
 
-## 적용 기술
+[시연영상](https://www.youtube.com/watch?v=_oMzIV2oyxE)
 
-- Back-End : Python, Django web framework, Bcrypt, My SQL, RESTful API
+## 사용 기술
+
+[Backend] : Python, Django
+[DevOps] : Mysql, AWS EC2, RDS, POSTMAN
 
 ## 구현 기능
-- 로그인/회원가입
-- ID 찾기/임시 비밀번호 생성 및 저장
-- 사용자 인가
+
+내가 구현한 기능
+
+### Members
+
+- Bcrypt 암호화와 JWT를 이용한 로그인 / 회원가입
+- 사용자의 편의를 위한 아이디 찾기 
+- UUID 모듈을 활용한 임시비밀번호 생성 
+- Login 데코레이터 작성을 통한 인가
+
+### Products
+
+- Main/Menu Page를 하나의 API로 통합
+- Query parameter를 활용해 상품 필터링(Category, Option, Concept, Color 등) 
+- Django Static Module을 사용해 상품 리뷰 이미지 파일을 Local에 저장
+- 상품 상세 정보 확인 API 구현
+- 평점과 작성시간을 기준으로 상품 후기를 정렬
+### Orders
+
 
 ### 메인 페이지/메뉴 페이지
 - 메뉴, 메인 페이지를 하나의 메서드에서 호출
